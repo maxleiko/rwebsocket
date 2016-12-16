@@ -24,7 +24,6 @@
     "url": "https://github.com/maxleiko/rwebsocket/issues"
   },
   "homepage": "https://github.com/maxleiko/rwebsocket#readme",
-	"readme": "README.md",
   "devDependencies": {
     "eslint": "^3.12.2",
     "mocha": "^3.2.0"
