@@ -66,6 +66,12 @@ RWebSocket.prototype = {
 		}
 	},
 
+	send: function (data) {
+		if (this.client) {
+			this.client.send(data);
+		}
+	},
+
 	onopen: function () {},
 	onmessage: function () {},
 	onclose: function () {},

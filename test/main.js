@@ -1,3 +1,4 @@
+var assert = require('assert');
 var WebSocket = require('ws');
 
 var RWebSocket = require('../rwebsocket');
@@ -53,5 +54,24 @@ describe('RWebSocket tests', function () {
 			client.close();
 			done();
 		};
+	});
+
+	it('should be able to send message', function (done) {
+		this.slow(1000);
+
+		var MSG = 'Hello World!';
+
+		// try to connect to closed server
+		var client = new RWebSocket('ws://echo.websocket.org', null, 100);
+		client.onmessage = function (evt) {
+			assert.equal(evt.data, MSG);
+			client.close();
+			done();
+		};
+		client.onopen = function () {
+			client.send(MSG);
+		};
+
+		client.connect();
 	});
 });
