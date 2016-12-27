@@ -1,5 +1,5 @@
 # rwebsocket [![Build Status](https://travis-ci.org/maxleiko/rwebsocket.svg?branch=master)](https://travis-ci.org/maxleiko/rwebsocket)
-Simple auto-reconnect WebSocket decorator
+Simple auto-reconnect WebSocket adapter
 
 ### Install
 ```sh
