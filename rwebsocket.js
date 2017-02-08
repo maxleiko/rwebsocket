@@ -9,15 +9,14 @@ function RWebSocket(url, protocols, retryInterval) {
 RWebSocket.prototype = {
 	connect: function () {
 		var self = this;
-		var connectTimeout;
 
 		this.client = new WebSocket(this.url, this.protocols);
 		this.readyState = this.client.readyState;
 		this.protocol = this.client.protocol;
 
 		this.client.onopen = function () {
-			clearTimeout(connectTimeout);
-			connectTimeout = null;
+			clearTimeout(self.connectTimeout);
+			self.connectTimeout = null;
 			self.onopen();
 		};
 
@@ -26,42 +25,43 @@ RWebSocket.prototype = {
 		};
 
 		this.client.onclose = function (event) {
-			switch (event.code) {
-				case 1000:
-					// normal close
-					break;
-
-				default:
-					// abnormal close
-					if (!connectTimeout) {
-						connectTimeout = setTimeout(function () {
-							self.connect();
-						}, self.retryInterval);
-					}
+			if (event.code === 1000) {
+				self.onclose(event);
+				self.onterminate();
+			} else {
+				self.onclose(event);
+				clearTimeout(self.connectTimeout);
+				self.connectTimeout = setTimeout(function () {
+					self.connect();
+				}, self.retryInterval);
 			}
-			self.onclose(event);
 		};
 
 		this.client.onerror = function (event) {
-			switch (event.code) {
-				case 'ECONNREFUSED':
-					if (!connectTimeout) {
-						connectTimeout = setTimeout(function () {
-							self.connect();
-						}, self.retryInterval);
-					}
-					break;
-
-				default:
-					self.onerror(event);
-					break;
-			}
 			self.onerror(event);
+			if (event.code === 'ECONNREFUSED') {
+				clearTimeout(self.connectTimeout);
+				self.connectTimeout = setTimeout(function () {
+					self.connect();
+				}, self.retryInterval);
+			}
 		};
 	},
 
 	close: function (code, reason) {
 		if (this.client) {
+			if (code === 1000) {
+				clearTimeout(this.connectTimeout);
+				this.client.close(code, reason);
+			} else {
+				this.client.close(code, reason);
+			}
+		}
+	},
+
+	terminate: function (code, reason) {
+		if (this.client) {
+			clearTimeout(this.connectTimeout);
 			this.client.close(code || 1000, reason);
 		}
 	},
@@ -76,6 +76,7 @@ RWebSocket.prototype = {
 	onmessage: function () {},
 	onclose: function () {},
 	onerror: function () {},
+	onterminate: function () {}
 };
 
 module.exports = RWebSocket;
